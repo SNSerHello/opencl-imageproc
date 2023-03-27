@@ -115,6 +115,8 @@ class CResize(object):
             self.prg_resize.nearest2D(self.queue, roi_shape, None, src_img, dst_img)
         elif mode == "LINEAR":
             self.prg_resize.linear2D(self.queue, roi_shape, None, src_img, dst_img)
+        else:
+            raise ValueError("Resize2D mode={} is unsupported".format(mode))
 
         res = np.empty(target_shape + (num_channels,), src_data.dtype)
         cl.enqueue_copy(self.queue, res, dst_img, origin=(0, 0), region=dst_img.shape)
@@ -146,6 +148,8 @@ class CResize(object):
             self.prg_resize.nearest3D(self.queue, roi_shape, None, src_img, dst_img)
         elif mode == "LINEAR":
             self.prg_resize.linear3D(self.queue, roi_shape, None, src_img, dst_img)
+        else:
+            raise ValueError("Resize3D mode={} is unsupported".format(mode))
 
         res = np.empty(target_shape + (num_channels,), src_data.dtype)
         cl.enqueue_copy(
