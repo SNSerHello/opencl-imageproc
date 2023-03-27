@@ -1,10 +1,10 @@
 # OpenCL ImageProc
 
-## Install 3rd-party libraries
+## Install Dependent Libraries
 
-### Anaconda3
+### Anaconda3 Environment
 
 ```bash
-conda install pyopencl h5py -c conda-forge
+conda install pyopencl matplotlib pillow -c conda-forge
 ```
 
