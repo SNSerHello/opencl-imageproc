@@ -5,25 +5,25 @@ import h5py as h5
 class CResize(object):
     def __init__(self):
         platforms = cl.get_platforms()
-        print "Available devices:"
+        print("Available devices:")
         for platform in platforms:
             devices = platform.get_devices()
             for device in devices:
-                print "  * {0} on {1} ({2})".format(device.name, device.platform.name, device.platform.version)
+                print("  * {0} on {1} ({2})".format(device.name, device.platform.name, device.platform.version))
 
         device = platforms[0].get_devices()[0]
-        print "Picked {0} on {1} ({2})".format(device.name, device.platform.name, device.platform.version)
+        print("Picked {0} on {1} ({2})".format(device.name, device.platform.name, device.platform.version))
 
         self.ctx = cl.Context([device])
         self.queue = cl.CommandQueue(self.ctx)
 
-        print "Max allowed 2D image size: ({0}, {1})".format( \
+        print("Max allowed 2D image size: ({0}, {1})".format( \
                                                         device.get_info(cl.device_info.IMAGE2D_MAX_WIDTH), \
-                                                        device.get_info(cl.device_info.IMAGE2D_MAX_HEIGHT))
-        print "Max allowed 3D image size: ({0}, {1}, {2})".format( \
+                                                        device.get_info(cl.device_info.IMAGE2D_MAX_HEIGHT)))
+        print("Max allowed 3D image size: ({0}, {1}, {2})".format( \
                                                         device.get_info(cl.device_info.IMAGE3D_MAX_WIDTH), \
                                                         device.get_info(cl.device_info.IMAGE3D_MAX_HEIGHT), \
-                                                        device.get_info(cl.device_info.IMAGE3D_MAX_DEPTH))
+                                                        device.get_info(cl.device_info.IMAGE3D_MAX_DEPTH)))
 
         self.prg_resize = cl.Program(self.ctx, """
             #pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
