@@ -1,6 +1,7 @@
+from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
 import pyopencl as cl
-import h5py as h5
 
 
 class CResize(object):
@@ -186,6 +187,8 @@ class CResize(object):
             channel_type = cl.channel_type.UNSIGNED_INT16
         elif src_data.dtype == np.uint32:
             channel_type = cl.channel_type.UNSIGNED_INT32
+        elif src_data.dtype == np.float32:
+            channel_type = cl.channel_type.FLOAT
         else:
             raise TypeError(
                 str("Data type " + str(src_data.dtype) + " currently not supported")
@@ -218,7 +221,7 @@ class CResize(object):
         elif mode == "LINEAR":
             self.prg_resize.linear2D(self.queue, roi_shape, None, src_img, dst_img)
 
-        res = np.empty(target_shape, src_data.dtype)
+        res = np.empty(target_shape + (num_channels,), src_data.dtype)
         cl.enqueue_copy(self.queue, res, dst_img, origin=(0, 0), region=dst_img.shape)
 
         return res
@@ -249,7 +252,7 @@ class CResize(object):
         elif mode == "LINEAR":
             self.prg_resize.linear3D(self.queue, roi_shape, None, src_img, dst_img)
 
-        res = np.empty(target_shape, src_data.dtype)
+        res = np.empty(target_shape + (num_channels,), src_data.dtype)
         cl.enqueue_copy(
             self.queue, res, dst_img, origin=(0, 0, 0), region=dst_img.shape
         )
@@ -261,18 +264,26 @@ def main():
     # Init OpenCL (only once)
     resizer = CResize()
 
-    # Size limitation for now...
-    src_data = np.array(h5.File("4,4_aligned.h5", "r")["img"])[0:16384, 0:16384].copy()
+    # Read picture data
+    src_data = np.ascontiguousarray(
+        np.array(Image.open("./images/cat.jpg").convert("RGBA"), dtype=np.float32)
+        / 255.0
+    )
+    target_shape = (src_data.shape[0] // 2, src_data.shape[1] // 2)
 
-    # Resize!
-    res_nearest = resizer.resize2D(src_data, (2048, 2048), mode="NEAREST")
-    res_linear = resizer.resize2D(src_data, (2048, 2048), mode="LINEAR")
+    # Resize picture
+    res_nearest = resizer.resize2D(src_data, target_shape, mode="NEAREST")
+    res_linear = resizer.resize2D(src_data, target_shape, mode="LINEAR")
 
-    # Save result
-    testfile = h5.File("output.h5", "w")
-    testfile.create_dataset("nearest", data=res_nearest)
-    testfile.create_dataset("linear", data=res_linear)
-    testfile.close()
+    # Show algorithm results
+    plt.figure(figsize=(10, 6), dpi=97)
+    plt.subplot(121)
+    plt.imshow(res_nearest)
+    plt.title("Nearest Resize Algorithm")
+    plt.subplot(122)
+    plt.imshow(res_linear)
+    plt.title("Linear Resize Algorithm")
+    plt.show()
 
 
 if __name__ == "__main__":
